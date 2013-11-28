@@ -219,6 +219,7 @@ class Goat {
 
   boolean isOutOfCanvas() {
     if (posX > canvasSizeX || posX < 0 || posY < 0 || posY > canvasSizeY) {
+      goatAttack.play();
       return true;
     } 
     else {
