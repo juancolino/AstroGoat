@@ -1,3 +1,7 @@
+import ddf.minim.*;
+Minim minim;
+AudioPlayer backgroundMusic;
+
 float canvasSizeY = 600;
 float canvasSizeX = 800;
 
@@ -42,6 +46,9 @@ ArrayList<Ball> balls;
 ArrayList<Goat> goats;
 
 void setup () {
+  minim = new Minim(this);
+  backgroundMusic = minim.loadFile("background_music.mp3");
+  backgroundMusic.play();
   ballImg = loadImage("ball.png");
   goatImg = loadImage("goat_ok.png");
   astronautImg = loadImage("astronaut.png");
@@ -139,11 +146,10 @@ void draw () {
     // check for collisions    
     if (goats.get(i).distanceToInX(player.posX) <= player.sizeX/2 && goats.get(i).posY == player.posY) {
       // impact!
-      player.scream();
       // remove the goat that has just caused the impact
       println("Goat removed due hit with player");
+      goats.get(i).yell();
       goats.remove(i);
-      gameOver();
     } 
     else {
       // check for out of canvas goats and draw the ones inside
@@ -173,6 +179,8 @@ void draw () {
 
 // This class represents the targets that the player has to blast in order to get points.
 class Goat {
+  AudioPlayer goatDie = minim.loadFile("goat_die.wav");
+  AudioPlayer goatAttack = minim.loadFile("goat_attack.wav");
   int pointsWorth = 1;
   float posX;
   float posY;
@@ -234,10 +242,6 @@ class Goat {
     }
   }
 
-  void deathScream() {
-    // Ahhhhhhh -> play a screem sound
-  }
-
   float distanceToInX(float pos) {
     float a = posX - pos;
     if (a < 0) {
@@ -246,6 +250,14 @@ class Goat {
     else {
       return a;
     }
+  }
+  
+  void deathScream() {
+    goatDie.play();
+  }
+  
+  void yell() {
+    goatAttack.play();
   }
 }
 
@@ -340,10 +352,6 @@ class Player {
       lane++;
       posY = laneHeight[lane];
     }
-  }
-
-  void scream() {
-    // ahhhhh!
   }
 }
 
