@@ -1,4 +1,9 @@
 DragonBallKinetic
 =================
 
-Dragon Ball Kinetic is a game that uses Kinetic as input devide. Two players play against each other to death. They have to gather energy by moving themselves. When any of the players reaches a maximum then he can blast the other one with energy for the win.
+Dragon Ball Kinetic is a game that uses Kinetic as input devide. One player plays shotting blasts of energy to destroy objects that fall from the celling. It collects points for each object destroyed. Most likely the objects falling down will be screaming goats.
+
+Kami
+Jun
+Nills
+Juan
