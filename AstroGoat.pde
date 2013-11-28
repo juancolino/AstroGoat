@@ -4,8 +4,14 @@ float canvasSizeX = 800;
 int time = 0;
 int previewsSize = 0;
 
+PImage ballImg;
+PImage astronautImg;
+PImage goatImg;
+PImage goatDyingImg;
+
+
 // Settings and vars for the player
-int playerSize = 50;
+int playerSize = 120;
 
 // Settings for the game
 int pointsCounter = 0;
@@ -13,10 +19,18 @@ int numberOfLanes = 5;
 float [] laneHeight;
 int initialLane = 2;
 int goatsInThePool = 0;
+int initialGoatFreq = 150; // The higher the lower is the freq (invocation lapse)
+int goatFreq = initialGoatFreq;
+
+// settings for the environment
+int redCode = 255;
+int greenCode = 214;
+int blueCode = 130;
+int collisionSpriteOffset = 65;
 
 // Settings for the goats
-int goatSizeX = 50;
-int goatSizeY = 30;
+int goatSizeX = 135;
+int goatSizeY = 120;
 int goatPointsWorth = 1;
 float GoatInitialPositionX = canvasSizeX - 100;
 
@@ -28,8 +42,13 @@ ArrayList<Ball> balls;
 ArrayList<Goat> goats;
 
 void setup () {
+  ballImg = loadImage("ball.png");
+  goatImg = loadImage("goat_ok.png");
+  astronautImg = loadImage("astronaut.png");
+  goatDyingImg = loadImage("goat_die.png");
+
   size((int)canvasSizeX, (int)canvasSizeY);
-  background(255);
+  background(redCode, greenCode, blueCode);
 
   laneHeight = new float [numberOfLanes];
   for (int i = 0; i < numberOfLanes; i++) {
@@ -43,15 +62,23 @@ void setup () {
 }
 
 void draw () {
-  background(255);
+  background(redCode, greenCode, blueCode);
+  fill(41, 171, 226);
+  rect(0, 0, 30, height); // pool
+  fill(255);
+  rect(25, 0, 5, height); // pool
   // draw lanes
   for (int i = 0; i < 5; i++) {
     line(0, laneHeight[i]-60, canvasSizeX, laneHeight[i]-60);
   }
 
-  if (time % 20 == 0) {
+  if (time % goatFreq == 0) {
     //goats.add(new Goat(GoatInitialPositionX, laneHeight[2], goatPointsWorth));
-    goats.add(new Goat(canvasSizeX-100, laneHeight[(int)random(0, 5)], 1));
+    goats.add(new Goat(canvasSizeX, laneHeight[(int)random(0, 5)], 1));
+  }
+
+  if (time % 100 == 0) {
+    goatFreq--;
   }
 
   // Draw player on screen
@@ -76,14 +103,14 @@ void draw () {
 
       // for each ball loop though all the goats to check the collisions ball <-> goat
       for (int j = 0; j < goats.size(); j++) { 
-        if (balls.get(i).distanceToInX(goats.get(j).posX) <= goats.get(j).sizeX/2 && balls.get(i).posY == goats.get(j).posY) {
+        if (balls.get(i).distanceToInX(goats.get(j).posX) <= goats.get(j).sizeX/2+collisionSpriteOffset && balls.get(i).posY == goats.get(j).posY) {
           // add points to the player
           pointsCounter = pointsCounter + goats.get(j).pointsWorth;
 
           // Impact! Goat screams and we remove it.
-          goats.get(i).deathScream();
+          goats.get(j).deathScream();
           println("Goat removed due ball hit");
-          goats.remove(j);
+          goats.get(j).bleed();
 
           // remove the ball that has just caused the impact
           println("Ball removed due to impact");
@@ -132,6 +159,14 @@ void draw () {
     }
   }
 
+  for (int i = 0; i < goats.size(); i++) {
+    if (goats.get(i).bleeding()) {
+      goats.get(i).bleed();
+    }
+    if (goats.get(i).dead()) {
+      goats.remove(i);
+    }
+  }
 
   time++;
 }
@@ -143,6 +178,9 @@ class Goat {
   float posY;
   float sizeX;
   float sizeY;
+  int colorCode = 0;
+  int dyingCounter = 10;
+  boolean dying = false;
 
   Goat (float pX, float pY, int p) {
     posX = pX;
@@ -150,17 +188,45 @@ class Goat {
     pointsWorth = p;
     sizeX = goatSizeX;
     sizeY = goatSizeY;
+    colorCode = (int)random(0, 255);
   }
 
   void draw () {
-    fill(0);
-    rect(posX, posY, sizeX, sizeY);
+    fill(colorCode);
+    noStroke();
+    rect(posX-40, posY-20, 100, 60);
+    if (dying) {
+      image(goatDyingImg, posX-65, posY-60, sizeX, sizeY);
+    } 
+    else {
+      image(goatImg, posX-65, posY-60, sizeX, sizeY);
+    }
     fill(255);
-    posX--;
+    if (!bleeding()) {
+      posX--;
+    }
   }
 
   boolean isOutOfCanvas() {
     if (posX > canvasSizeX || posX < 0 || posY < 0 || posY > canvasSizeY) {
+      return true;
+    } 
+    else {
+      return false;
+    }
+  }
+
+  boolean bleeding () {
+    return dying;
+  }
+
+  void bleed() {
+    dying = true;
+    dyingCounter--;
+  }
+
+  boolean dead() {
+    if (dyingCounter <= 0) {
       return true;
     } 
     else {
@@ -196,7 +262,7 @@ class Ball {
 
   void draw () {
     fill(0);
-    rect(posX, posY, 20, 20);
+    image(ballImg, posX+45, posY-5, 40, 40);
     fill(255);
     posX = posX + 2;
   }
@@ -258,7 +324,7 @@ class Player {
 
   void draw () {
     fill(0);
-    rect(posX-(sizeX/2), posY-(sizeY/2), sizeX, sizeY);
+    image(astronautImg, posX-60, posY-60, sizeX, sizeY);
     fill(255);
   }
 
@@ -309,4 +375,5 @@ void gameOver() {
 void restart() {
   goats.clear();
   balls.clear();
+  goatFreq = initialGoatFreq;
 }
