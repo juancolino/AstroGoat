@@ -2,6 +2,7 @@ float sizeY = 600;
 float sizeX = 800;
 
 int time = 0;
+int previewsSize = 0;
 
 // Settings and vars for the player
 int playerSize = 50;
@@ -9,7 +10,8 @@ int playerSize = 50;
 // Settings for the game
 int pointsCounter = 0;
 int numberOfLanes = 5;
-int [] laneHeight;
+float [] laneHeight;
+int initialLane = 2;
 
 // Settings for the goats
 int goatSizeX = 50;
@@ -20,221 +22,258 @@ Player player;
 float playerInitialPositionX = 100;
 float playerInitialPositionY = sizeY - 50;
 
-ArrayList<Balls> balls;
+ArrayList<Ball> balls;
 ArrayList<Goat> goats;
 
 void setup () {
-  size(sizeX, sizeY);
+  size((int)sizeX, (int)sizeY);
   background(255);
 
-  laneHeight = new float [5];
-  for (int i = 0; i < laneHeight; i++) {
-    laneHeight[i] = sizeY/numberOfLanes;
+  laneHeight = new float [numberOfLanes];
+  for (int i = 0; i < numberOfLanes; i++) {
+    laneHeight[i] = sizeY/numberOfLanes*i+60;
   }
 
-  bolts = new ArrayList<Ball>();
+  balls = new ArrayList<Ball>();
   goats = new ArrayList<Goat>();
 
-  player = new Player(playerInitialPositionX, playerInitialPositionY);
+  player = new Player(initialLane); // Initial position lane
 }
 
 void draw () {
   background(255);
   // draw lanes
   for (int i = 0; i < 5; i++) {
-    line(sizeY/5, 0, sizeX, sizeY);
+    line(0, laneHeight[i]-60, sizeX, laneHeight[i]-60);
   }
 
   // Draw player on screen
   player.draw();
 
-  // remove the bolts out of the canvas and draw the ones inside
+  // remove the balls out of the canvas and draw the ones inside
+  if (previewsSize != balls.size()) {
+    println("Balls.size(): " + balls.size());
+    previewsSize = balls.size();
+  }
   for (int i = 0; i < balls.size(); i++) { // loop though the balls
-    for (int j = 0; j < targets.size(); j++) { // for each bolt loop though all the goats to check the collisions ball <-> goat
-      if (balls.get(i).distanceToInX(goats.get(j).posX) <= goats.get(j).sizeX/2) { // we only check on the X axis.
-        // Impact!
+    // check for out of canvas balls and draw the ones inside
+    if (balls.get(i).isOutOfCanvas()) {
+      balls.remove(i);
+      println("Ball removed due out of canvas");
+    } 
+    else {
+      // draw ball
+      balls.get(i).draw();
+    }
 
+    for (int j = 0; j < goats.size(); j++) { // for each ball loop though all the goats to check the collisions ball <-> goat
+      if (balls.get(i).distanceToInX(goats.get(j).posX) <= goats.get(j).sizeX/2) { // we only check on the X axis.
+        // Impact! Goat screams and we remove it.
+        goats.get(i).deathScream();
+        goats.remove(j);
 
         // add points to the player
-        pointsCounter = pointsCounter + targets.get(j).pointsWorth;
+        pointsCounter = pointsCounter + goats.get(j).pointsWorth;
+
         // remove the bolt that has just caused the impact
-        bolts.remove(i);
-        // remove the target
-        targets.remove(j);
-      } 
-      else {
-        // check for out of canvas bolts and draw the ones inside
-        if (bolts.get(i).isOutOfCanvas()) {
-          bolts.remove(i);
-        } 
-        else {
-          // draw bolt
-          bolts.get(i).draw();
-        }
-      }
-    }
-
-    // -------
-
-    /*    // check for collisions    
-     if (bolts.get(i).distanceToInX(wert.posX) <= wert.size/2 && bullets.get(i).distanceToInY(wert.posY) <= wert.size/2) {
-     // impact!
-     println("IMPACTO");
-     wert.takeDamage(bullets.get(i).damage);
-     // remove the bullet that has just caused the impact
-     bullets.remove(i);
-     } 
-     else {
-     // check for out of canvas bullets and draw the ones inside
-     if (bullets.get(i).isOutOfCanvas()) {
-     // destroy bullet
-     println("Bullet " + bullets.get(i) + " removed.");
-     bullets.remove(i);
-     } 
-     else {
-     // draw bullet
-     bullets.get(i).draw();
-     }
-     }
-     }
-     
-     */
-
-    for (int i = 0; i < bullshits.size(); i++) {
-      // check for collisions    
-      if (bullshits.get(i).distanceToInX(student.posX) <= student.size/2 && bullshits.get(i).distanceToInY(student.posY) <= student.size/2) {
-        // impact!
-        println("IMPACTO");
-        student.takeDamage(bullshits.get(i).damage);
-        // remove the bullet that has just caused the impact
-        bullshits.remove(i);
-      } 
-      else {
-        // check for out of canvas bullets and draw the ones inside
-        if (bullshits.get(i).isOutOfCanvas()) {
-          // destroy bullet
-          println("Bullshit " + bullshits.get(i) + " removed.");
-          bullshits.remove(i);
-        } 
-        else {
-          // draw bullet
-          bullshits.get(i).draw();
-        }
-      }
-    }
-
-    time++;
-  }
-
-  // This class represents the targets that the player has to blast in order to get points.
-  class Goat {
-    int pointsWorth = goatPointsWorth;
-    int posX = 0;
-    int posY = 0;
-    int sizeX;
-    int sizeY;
-
-    Goat (int pX, int pY, int p) {
-      posX = pX;
-      posY = pY;
-      pointsWorth = p;
-      sizeX = goatSizeX;
-      sizeY = goatSizeY;
-    }
-
-    void draw () {
-      fill(0);
-      rect(posX, posY, sizeX, sizeY);
-      fill(255);
-      posX--;
-    }
-  }
-
-  // This class represents a blast bolt on the screen
-  class Ball {
-    int posX = 0;
-    int posY = 0;
-    int damage = 1;
-
-    Ball (int pX, int pY) {
-      posX = pX;
-      posY = pY;
-    }
-
-    void draw () {
-      fill(0);
-      rect(posX, posY, 20, 20);
-      fill(255);
-      posX++;
-    }
-
-    boolean isOutOfCanvas() {
-      if (posX > sizeX || posX < 0 || posY < 0 || posY > sizeY ) {
-        return true;
-      } 
-      else {
-        return false;
-      }
-    }
-
-    int distanceToInX(int pos) {
-      int a = posX - pos;
-      if (a < 0) {
-        return -a;
-      } 
-      else {
-        return a;
-      }
-    }
-
-    int distanceToInY(int pos) {
-      int a = posY - pos;
-      if (a < 0) {
-        return -a;
-      } 
-      else {
-        return a;
+        println("Ball removed due to impact");
+        balls.remove(i);
       }
     }
   }
 
-  // This class represents a player on the screen
-  class Player {
-    float posX = 100;
-    float posY = laneHeight[2];
-    int lane = 2;
-    int sizeX = playerSize;
-    int sizeY = playerSize;
-
-    // The constructor takes the initial energy level and the initial position
-    // of the player on screen (initialPosX and initialPosY)
-    Player (int lane) {
-      if (0 >= lane >= numberOfLanes) {
-        posY = laneHeight[lane];
-      } else {
-        println("There is no such a lane...");
+  // Check for goats that have touched the player or the end of the screen
+  for (int i = 0; i < goats.size(); i++) {
+    // check for collisions    
+    if (goats.get(i).distanceToInX(player.posX) <= player.sizeX/2) {
+      // impact!
+      player.scream();
+      gameOver();
+      // remove the goat that has just caused the impact
+      goats.remove(i);
+    } 
+    else {
+      // check for out of canvas goats and draw the ones inside
+      if (goats.get(i).isOutOfCanvas()) {
+        // destroy goat
+        goats.remove(i);
+      } 
+      else {
+        // draw goat
+        goats.get(i).draw();
       }
     }
+  }
 
-    void shootBall () {
-      balls.add(new Ball(posX, posY));
-    }
 
-    void draw () {
-      fill(0);
-      rect(posX, posY, sizeX, sizeY);
-      fill(255);
+  time++;
+}
+
+void keyPressed() {
+  switch(key) {  
+  case 'a':
+    player.shootBall();
+    break;
+
+  case 'd':
+    player.moveDown();
+    break;
+
+  case 'j':
+    player.moveUp();
+    break;
+
+  case 'f':
+    player.shootBall();
+    break;
+  }
+}
+
+void gameOver() {
+  // Game over motherfucker!
+}
+
+// This class represents the targets that the player has to blast in order to get points.
+class Goat {
+  int pointsWorth = goatPointsWorth;
+  float posX = 0;
+  float posY = 0;
+  float sizeX;
+  float sizeY;
+
+  Goat (int pX, int pY, int p) {
+    posX = pX;
+    posY = pY;
+    pointsWorth = p;
+    sizeX = goatSizeX;
+    sizeY = goatSizeY;
+  }
+
+  void draw () {
+    fill(0);
+    rect(posX, posY, sizeX, sizeY);
+    fill(255);
+    posX--;
+  }
+
+  boolean isOutOfCanvas() {
+    if (posX > sizeX || posX < 0 || posY < 0 || posY > sizeY ) {
+      return true;
+    } 
+    else {
+      return false;
     }
   }
 
-  void keyPressed() {
-    switch(key) {  
-    case 'a':
-      player.shootBall();
-      break;
+  void deathScream() {
+    // Ahhhhhhh -> play a screem sound
+  }
 
-    case 'b':
-      // bla
-      break;
+  float distanceToInX(float pos) {
+    float a = posX - pos;
+    if (a < 0) {
+      return -a;
+    } 
+    else {
+      return a;
     }
   }
+}
+
+// This class represents a blast bolt on the screen
+class Ball {
+  float posX = 0;
+  float posY = 0;
+  int damage = 1;
+
+  Ball (float pX, float pY) {
+    posX = pX;
+    posY = pY;
+  }
+
+  void draw () {
+    fill(0);
+    rect(posX, posY, 20, 20);
+    fill(255);
+    posX++;
+  }
+
+  boolean isOutOfCanvas() {
+    if (posX > sizeX || posX < 0 || posY < 0 || posY > sizeY ) {
+      return true;
+    } 
+    else {
+      return false;
+    }
+  }
+
+  float distanceToInX(float pos) {
+    float a = posX - pos;
+    if (a < 0) {
+      return -a;
+    } 
+    else {
+      return a;
+    }
+  }
+
+  float distanceToInY(float pos) {
+    float a = posY - pos;
+    if (a < 0) {
+      return -a;
+    } 
+    else {
+      return a;
+    }
+  }
+}
+
+// This class represents a player on the screen
+class Player {
+  float posX = 100;
+  float posY = laneHeight[2];
+  int lane = 2;
+  int sizeX = playerSize;
+  int sizeY = playerSize;
+
+  // The constructor takes the initial energy level and the initial position
+  // of the player on screen (initialPosX and initialPosY)
+  Player (int l) {
+    lane = l;
+    if (0 <= lane && lane < numberOfLanes) {
+      posY = laneHeight[lane];
+    } 
+    else {
+      println("There is no such a lane...");
+    }
+  }
+
+  void shootBall () {
+    balls.add(new Ball(posX, posY));
+    println("Ball out");
+  }
+
+  void draw () {
+    fill(0);
+    rect(posX-(sizeX/2), posY-(sizeY/2), sizeX, sizeY);
+    fill(255);
+  }
+
+  void moveUp() {
+    if (lane > 0) {
+      lane--;
+      posY = laneHeight[lane];
+    }
+  }
+
+  void moveDown() {
+    if (lane < numberOfLanes-1) {
+      lane++;
+      posY = laneHeight[lane];
+    }
+  }
+
+  void scream() {
+    // ahhhhh!
+  }
+}
