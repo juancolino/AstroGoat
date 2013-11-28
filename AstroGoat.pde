@@ -189,6 +189,9 @@ class Goat {
   int colorCode = 0;
   int dyingCounter = 10;
   boolean dying = false;
+  int c1 = (int)random(0, 255);
+  int c2 = (int)random(0, 255);
+  int c3 = (int)random(0, 255);
 
   Goat (float pX, float pY, int p) {
     posX = pX;
@@ -196,11 +199,10 @@ class Goat {
     pointsWorth = p;
     sizeX = goatSizeX;
     sizeY = goatSizeY;
-    colorCode = (int)random(0, 255);
   }
 
   void draw () {
-    fill(colorCode);
+    fill(c1, c2, c3);
     noStroke();
     rect(posX-40, posY-20, 100, 60);
     if (dying) {
