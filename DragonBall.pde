@@ -13,18 +13,11 @@ Player player1;
 float player1InitialPositionX = 100;
 float player1InitialPositionY = sizeY - 50;
 
-Player player2;
-float player2InitialPositionX = sizeX - 100;
-float player2InitialPositionY = sizeY - 50;
-
 void setup () {
   size(sizeX, sizeY);
   background(255);
 
   player1 = new Player(0, player1InitialPositionX, player1InitialPositionY);
-  player2 = new Player(0, player2InitialPositionX, player2InitialPositionY);
-  player1.assignOpponent(player2);
-  player2.assignOpponent(player1);
 }
 
 void draw () {
@@ -35,21 +28,9 @@ void draw () {
     for (int i = 0; i < r; i++) {
       player1.chargeEnergy();
     }
-    r = (int)random(1, 10);
-    for (int i = 0; i < r; i++) {
-      player2.chargeEnergy();
-    }
-  }
-
-  if (player1.energy == player1.maxEnergy) {
-    // Victory for Player 1
-  } 
-  else if (player2.energy == player2.maxEnergy) {
-    // Victory for Player 2
   }
 
   player1.drawPlayer();
-  player2.drawPlayer();
   time++;
 }
 
@@ -60,17 +41,12 @@ class Player {
   int maxEnergy = maximumEnergy;
   float posX;
   float posY;
-  Player opponent;
 
   // The constructor takes the initial energy level and the initial position of the player on screen (initialPosX and initialPosY)
   Player (int initialEnergy, float initialPosX, float initialPosY) {
     energy = initialEnergy;
     posX = initialPosX;
     posY = initialPosY;
-  }
-
-  void assignOpponent (Player opp) {
-    opponent = opp;
   }
 
   void chargeEnergy () {
@@ -122,29 +98,6 @@ void drawEnergyBars() {
   fill(0);
   text(player1.energy + "/" + maximumEnergy, 50, 150);
   fill(255);
-
-  // Player 2 bar
-  if (player2.energy < (int)maximumEnergy*0.75) {
-    fill(0, 0, 0);
-  } 
-  else if (player2.energy == maximumEnergy) {
-    if (time % barBlinkingFreq < (int)barBlinkingFreq/2) {
-      fill(255);
-    } 
-    else {
-      fill(255, 0, 0);
-    }
-  } 
-  else if (player2.energy >= (int)maximumEnergy*0.75) {
-    fill(255, 0, 0);
-  }
-
-  textSize(30);
-  noStroke();
-  rect(sizeX/2 + 50, 50, player2.energy, energyBarHeight);
-  fill(0);
-  text(player2.energy + "/" + maximumEnergy, sizeX/2 + 50, 150);
-  fill(255);
 }
 
 void keyPressed() {
@@ -160,19 +113,6 @@ void keyPressed() {
 
   case 'c':
     player1.drawEnergyFromOpponent();
-    break;
-
-    //player 2 cases
-  case 'd':
-    player2.chargeEnergy();
-    break;
-
-  case 'e':
-    player2.shootEnergyBlast();
-    break;
-
-  case 'f':
-    player2.drawEnergyFromOpponent();
     break;
   }
 }
