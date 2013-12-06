@@ -1,5 +1,3 @@
-PFont font;
-
 import ddf.minim.*;
 Minim minim;
 AudioPlayer backgroundMusic;
@@ -48,8 +46,6 @@ ArrayList<Ball> balls;
 ArrayList<Goat> goats;
 
 void setup () {
-  font = loadFont("bit.vlw");
-  textFont(font, 28);
   minim = new Minim(this);
   backgroundMusic = minim.loadFile("background_music.mp3");
   backgroundMusic.play();
@@ -177,8 +173,6 @@ void draw () {
       goats.remove(i);
     }
   }
-  fill(255,0,0);
-  text("Score: "+ pointsCounter, 600, 40);
 
   time++;
 }
@@ -366,20 +360,16 @@ class Player {
 
 void keyPressed() {
   switch(key) {  
-  case 'a':
+  case 'j':
     player.shootBall();
     break;
 
-  case 'd':
+  case 's':
     player.moveDown();
     break;
 
-  case 'j':
+  case 'w':
     player.moveUp();
-    break;
-
-  case 'f':
-    player.shootBall();
     break;
   }
 }
